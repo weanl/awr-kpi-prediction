@@ -77,9 +77,12 @@ feature = ['2080020', '2080021','2080022', '2080023', '2080024', '2080025',
            '2080049', '2080050','2080051', '2080052', '2080053', '2080054', 
            '2080055', '2080056','2080057', '2080058', '2080059', '2080060', 
            '2080061', '2080062','2080063', '2080064', '2080065',]
+
 global db
 
 global denominator
+
+feature_percentage = 0.9
 
 # class definition here
 
@@ -109,16 +112,12 @@ def pearson(X,y):
     return scores,pvalues
     
 # feature selection
-def feature_selection(method,instance_db,target,percentage=0.9):
+def feature_selection(method,instance_db,target,percentage=feature_percentage):
     instance_db_values = instance_db.values
     if method == "lasso":
         lassocv = LassoCV(max_iter=5000, normalize=True,alphas = [0.0001])
         lassocv.fit(instance_db_values,target)
         
-        # weight list
-        print("the weight matrix: ")
-        print(lassocv.coef_,lassocv.coef_.shape)
-        print("number of the chosen features: ", np.sum(lassocv.coef_ >= 0))
         
         # sort features according to coef_
         coef = abs(lassocv.coef_)
@@ -127,8 +126,7 @@ def feature_selection(method,instance_db,target,percentage=0.9):
         features = pd.DataFrame([tup[0] for tup in feature])
         
         # the features been chosen
-        print("the chosen features:")
-        mask = pd.DataFrame([item[1] for item in feature]) >= feature[int(len(feature)*percentage)][1]
+        mask = pd.DataFrame([item[1] for item in feature]) >= feature[int(len(feature)*percentage)-1][1]
         feature_selected = pd.DataFrame(features)[:][np.asarray(mask).reshape(-1)]
         feature_selected = [item for items in feature_selected.values for item in items]
     
@@ -143,8 +141,7 @@ def feature_selection(method,instance_db,target,percentage=0.9):
         features = pd.DataFrame([tup[0] for tup in feature])
         
         # the features been chosen
-        print("the chosen features:")
-        mask = pd.DataFrame([item[1] for item in feature]) >= feature[int(len(feature)*percentage)][1]  
+        mask = pd.DataFrame([item[1] for item in feature]) >= feature[int(len(feature)*percentage-1)][1]  
         feature_selected = pd.DataFrame(features)[:][np.asarray(mask).reshape(-1)]
         feature_selected = [item for items in feature_selected.values for item in items]
     
@@ -171,8 +168,7 @@ def feature_selection(method,instance_db,target,percentage=0.9):
         features = pd.DataFrame([tup[0] for tup in feature])
         
         # the features been chosen
-        print("the chosen features:")
-        mask = pd.DataFrame([item[1] for item in feature]) >= feature[int(len(feature)*percentage)][1]   
+        mask = pd.DataFrame([item[1] for item in feature]) >= feature[int(len(feature)*percentage-1)][1]   
         feature_selected = pd.DataFrame(features)[:][np.asarray(mask).reshape(-1)]
         feature_selected = [item for items in feature_selected.values for item in items]
         
@@ -369,7 +365,7 @@ if  __name__ == '__main__':
                            "reliefF":{},
                            }
     
-    sets = file_sets   # file_all
+    sets = file_all   # file_sets
     
     for turn,file in enumerate(sets):
         db = pd.read_csv('../csv/' + file + '.csv')
@@ -698,7 +694,7 @@ if  __name__ == '__main__':
                         "svm":[],
                         "logisticR":[],
                         "rf":[],
-                        "nlpC":[]
+                        "mlpC":[]
                         }
     load_cla_valuate["svm"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_load["svm_un"],y_test_cla_load["None"],average = 'macro')[:3])
@@ -706,7 +702,7 @@ if  __name__ == '__main__':
                     y_test_cla_predict_load["logisticR_un"],y_test_cla_load["None"],average = 'macro')[:3])
     load_cla_valuate["rf"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_load["rf_un"],y_test_cla_load["None"],average = 'macro')[:3])
-    load_cla_valuate["nlpC"].append(precision_recall_fscore_support(\
+    load_cla_valuate["mlpC"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_load["mlpC_un"],y_test_cla_load["None"],average = 'macro')[:3])
     load_cla_valuate["logisticR"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_load["logisticR_lasso"],y_test_cla_load["lasso"],average = 'macro')[:3])
@@ -714,7 +710,7 @@ if  __name__ == '__main__':
                     y_test_cla_predict_load["svm_lasso"],y_test_cla_load["lasso"],average = 'macro')[:3])
     load_cla_valuate["rf"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_load["rf_lasso"],y_test_cla_load["lasso"],average = 'macro')[:3])
-    load_cla_valuate["nlpC"].append(precision_recall_fscore_support(\
+    load_cla_valuate["mlpC"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_load["mlpC_lasso"],y_test_cla_load["lasso"],average = 'macro')[:3])
     load_cla_valuate["svm"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_load["svm_pearson"],y_test_cla_load["pearson"],average = 'macro')[:3])
@@ -722,7 +718,7 @@ if  __name__ == '__main__':
                     y_test_cla_predict_load["logisticR_pearson"],y_test_cla_load["pearson"],average = 'macro')[:3])
     load_cla_valuate["rf"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_load["rf_pearson"],y_test_cla_load["pearson"],average = 'macro')[:3])
-    load_cla_valuate["nlpC"].append(precision_recall_fscore_support(\
+    load_cla_valuate["mlpC"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_load["mlpC_pearson"],y_test_cla_load["pearson"],average = 'macro')[:3])
     load_cla_valuate["svm"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_load["svm_reliefF"],y_test_cla_load["reliefF"],average = 'macro')[:3])
@@ -730,7 +726,7 @@ if  __name__ == '__main__':
                     y_test_cla_predict_load["logisticR_reliefF"],y_test_cla_load["reliefF"],average = 'macro')[:3])
     load_cla_valuate["rf"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_load["rf_reliefF"],y_test_cla_load["reliefF"],average = 'macro')[:3])
-    load_cla_valuate["nlpC"].append(precision_recall_fscore_support(\
+    load_cla_valuate["mlpC"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_load["mlpC_reliefF"],y_test_cla_load["reliefF"],average = 'macro')[:3])
     print("load classification evaluation")
     print(load_cla_valuate)
@@ -771,7 +767,7 @@ if  __name__ == '__main__':
                         "svm":[],
                         "logisticR":[],
                         "rf":[],
-                        "nlpC":[]
+                        "mlpC":[]
                         }
     perf_cla_valuate["svm"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_perf["svm_un"],y_test_cla_perf["None"],average = 'macro')[:3])
@@ -779,7 +775,7 @@ if  __name__ == '__main__':
                     y_test_cla_predict_perf["logisticR_un"],y_test_cla_perf["None"],average = 'macro')[:3])
     perf_cla_valuate["rf"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_perf["rf_un"],y_test_cla_perf["None"],average = 'macro')[:3])
-    perf_cla_valuate["nlpC"].append(precision_recall_fscore_support(\
+    perf_cla_valuate["mlpC"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_perf["mlpC_un"],y_test_cla_perf["None"],average = 'macro')[:3])
     perf_cla_valuate["svm"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_perf["svm_lasso"],y_test_cla_perf["lasso"],average = 'macro')[:3])
@@ -787,7 +783,7 @@ if  __name__ == '__main__':
                     y_test_cla_predict_perf["logisticR_lasso"],y_test_cla_perf["lasso"],average = 'macro')[:3])
     perf_cla_valuate["rf"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_perf["rf_lasso"],y_test_cla_perf["lasso"],average = 'macro')[:3])
-    perf_cla_valuate["nlpC"].append(precision_recall_fscore_support(\
+    perf_cla_valuate["mlpC"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_perf["mlpC_lasso"],y_test_cla_perf["lasso"],average = 'macro')[:3])
     perf_cla_valuate["svm"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_perf["svm_pearson"],y_test_cla_perf["pearson"],average = 'macro')[:3])
@@ -795,7 +791,7 @@ if  __name__ == '__main__':
                     y_test_cla_predict_perf["logisticR_pearson"],y_test_cla_perf["pearson"],average = 'macro')[:3])
     perf_cla_valuate["rf"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_perf["rf_pearson"],y_test_cla_perf["pearson"],average = 'macro')[:3])
-    perf_cla_valuate["nlpC"].append(precision_recall_fscore_support(\
+    perf_cla_valuate["mlpC"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_perf["mlpC_pearson"],y_test_cla_perf["pearson"],average = 'macro')[:3])
     perf_cla_valuate["logisticR"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_perf["logisticR_reliefF"],y_test_cla_perf["reliefF"],average = 'macro')[:3])
@@ -803,7 +799,7 @@ if  __name__ == '__main__':
                     y_test_cla_predict_perf["svm_reliefF"],y_test_cla_perf["reliefF"],average = 'macro')[:3])
     perf_cla_valuate["rf"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_perf["rf_reliefF"],y_test_cla_perf["reliefF"],average = 'macro')[:3])
-    perf_cla_valuate["nlpC"].append(precision_recall_fscore_support(\
+    perf_cla_valuate["mlpC"].append(precision_recall_fscore_support(\
                     y_test_cla_predict_perf["mlpC_reliefF"],y_test_cla_perf["reliefF"],average = 'macro')[:3])
     print("performance classification evaluation")
     print(perf_cla_valuate)
